@@ -18,18 +18,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Debug repository
-        run: |
-          pwd
-          echo "Repository contents:"
-          ls -la
-          echo "Searching for requirements.txt..."
-          find . -name "requirements.txt"
 
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       # 🛠️ Local Build Section (Optional)
       # The following section in your workflow is designed to catch build issues early on the client side, before deployment. This can be helpful for debugging and validation. However, if this step significantly increases deployment time and early detection is not critical for your workflow, you may remove this section to streamline the deployment process.
@@ -70,9 +63,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E7B1F67300E84D078DAF11D91B08F459 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1D7B3BF847624C7099F231DDA412A139 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E7C26ADE3EA541B3A844B2C81CEDD8E7 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FD6C28CEF2BA4087834298D932E3FDEF }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C671850C3CDA4227AF99C03767CD996B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0BF01F800D2942D7BAFD064B3D0336D7 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
