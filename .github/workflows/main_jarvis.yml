@@ -54,6 +54,8 @@ jobs:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
 
+      environment: Secrets
+ 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -67,6 +69,20 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C671850C3CDA4227AF99C03767CD996B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0BF01F800D2942D7BAFD064B3D0336D7 }}
 
+     
+      - name: Push Secrets to Azure App Settings
+        uses: azure/appservice-settings@v1
+        with:
+         app-name: 'Jarvis'
+         slot-name: 'Production'
+         app-settings-json: |
+            [
+              {
+                "name": "HF_API_KEY",
+                "value": "${{ secrets.HF_API_KEY }}",
+                "slotSetting": false
+              }
+            ]
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
