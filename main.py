@@ -8,8 +8,9 @@ from pydantic import BaseModel
 load_dotenv()
 
 HF_TOKEN = os.getenv("HF_API_KEY")
+# Use a supported provider for DeepSeek-R1
 MODEL = os.getenv("MODEL", "deepseek-ai/DeepSeek-R1")
-API_URL = "https://router.huggingface.co/v1/chat/completions"
+PROVIDER = os.getenv("PROVIDER", "novita")  # novita, fireworks-ai, deepinfra, etc.
 
 app = FastAPI(title="Jarvis AI")
 
@@ -21,7 +22,7 @@ class ChatRequest(BaseModel):
 def home():
     with open("index.html", "r", encoding="utf-8") as f:
         return f.read()
-       
+
 @app.post("/chat")
 def chat(req: ChatRequest):
     messages = [{"role": "system", "content": """You are a helpful AI assistant. Always analyze what the user truly wants to know before responding.
@@ -34,19 +35,39 @@ Your responses MUST follow this section-based structure:
 4. **Summary** — A one-line takeaway to reinforce the answer.
 
 Rules:
-- Start every response by identifying the user's intent (e.g. "You're asking about...", "You want to understand...", "You're looking for...").
+- Start every response by identifying the user's intent.
 - Use markdown formatting with bold section headers.
-- Keep language simple and direct. Avoid jargon unless the user's message uses it first.
-- If the question is vague, clarify what you think the user means before answering.
-- If the question is opinion-based or has no single answer, present multiple perspectives.
+- Keep language simple and direct.
 """}]
+    
     messages.extend(req.history)
     messages.append({"role": "user", "content": req.message})
 
-    payload = {"model": MODEL, "messages": messages, "temperature": 0.7, "max_tokens": 1024}
-    headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
+    payload = {
+        "model": MODEL,
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "provider": PROVIDER   # ← This fixes the "model not supported" error
+    }
     
-    r = requests.post(API_URL, headers=headers, json=payload, timeout=120)
-    if r.status_code != 200:
-        return {"error": r.text}
-    return {"response": r.json()["choices"][0]["message"]["content"]}
+    headers = {
+        "Authorization": f"Bearer {HF_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        r = requests.post(
+            "https://router.huggingface.co/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=180  # Increased for large reasoning model
+        )
+        
+        if r.status_code != 200:
+            return {"error": r.text}
+        
+        return {"response": r.json()["choices"][0]["message"]["content"]}
+        
+    except Exception as e:
+        return {"error": str(e)}
