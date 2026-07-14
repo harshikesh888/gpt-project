@@ -1,18 +1,172 @@
-<html>
-<head><title>Jarvis AI</title>
-<style>body{font-family:Arial;max-width:800px;margin:auto;padding:20px;}textarea{width:100%;height:120px;}button{padding:12px 24px;margin:10px 0;}</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #e5e7eb;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            max-width: 80%;
+            padding: 14px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+        }
+        .user {
+            background: #1f2937;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant {
+            background: #374151;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .input-area {
+            background: #111827;
+            border-top: 1px solid #374151;
+        }
+        .grok-logo {
+            background: linear-gradient(90deg, #00f5ff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
 </head>
-<body>
-<h2>🤖 Jarvis AI</h2>
-<textarea id="msg" placeholder="Type your message..."></textarea><br>
-<button onclick="send()">Send</button>
-<div id="resp" style="margin-top:20px;white-space:pre-wrap;"></div>
-<script>
-async function send(){ 
-  let msg = document.getElementById("msg").value;
-  let res = await fetch("/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:msg})});
-  let data = await res.json();
-  document.getElementById("resp").innerText = data.response || data.error;
-}
-</script>
-</body></html>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="chat-container w-full flex flex-col">
+        <!-- Header -->
+        <div class="bg-black border-b border-gray-800 p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-xl font-bold">
+                J
+            </div>
+            <div>
+                <h1 class="text-2xl font-semibold grok-logo">Jarvis AI</h1>
+                <p class="text-xs text-gray-500">Powered by DeepSeek-R1</p>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0a0a0a]">
+            <!-- Messages will be added here by JS -->
+            <div class="text-center text-gray-500 text-sm py-8">
+                Hello! I'm Jarvis.<br>Ask me anything.
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area p-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="relative">
+                    <textarea 
+                        id="msg" 
+                        rows="1"
+                        class="w-full bg-[#1f2937] text-white placeholder-gray-400 rounded-3xl px-6 py-4 pr-20 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-gray-700"
+                        placeholder="Message Jarvis..."></textarea>
+                    
+                    <button 
+                        onclick="sendMessage()"
+                        class="absolute right-3 bottom-3 bg-cyan-500 hover:bg-cyan-600 text-black font-medium px-6 py-2 rounded-2xl flex items-center gap-2 transition-all active:scale-95">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Send</span>
+                    </button>
+                </div>
+                <p class="text-center text-[10px] text-gray-600 mt-3">Jarvis can make mistakes. Consider checking important info.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatDiv = document.getElementById('chat');
+        const msgInput = document.getElementById('msg');
+
+        function addMessage(content, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+            
+            msgDiv.innerHTML = `
+                <div class="message ${isUser ? 'user' : 'assistant'}">
+                    ${content}
+                </div>
+            `;
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = msgInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            msgInput.value = '';
+
+            // Show thinking indicator
+            const thinkingId = 'thinking-' + Date.now();
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.id = thinkingId;
+            thinkingDiv.className = "flex justify-start";
+            thinkingDiv.innerHTML = `
+                <div class="message assistant flex items-center gap-2">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Thinking...</span>
+                </div>
+            `;
+            chatDiv.appendChild(thinkingDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+
+            try {
+                const res = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        message: message,
+                        history: []   // You can extend this later for conversation history
+                    })
+                });
+
+                const data = await res.json();
+
+                // Remove thinking indicator
+                document.getElementById(thinkingId).remove();
+
+                if (data.response) {
+                    addMessage(data.response, false);
+                } else if (data.error) {
+                    addMessage(`<span class="text-red-400">Error: ${data.error}</span>`, false);
+                }
+            } catch (err) {
+                document.getElementById(thinkingId).remove();
+                addMessage(`<span class="text-red-400">Connection error. Please try again.</span>`, false);
+            }
+        }
+
+        // Send on Enter (Shift+Enter for new line)
+        msgInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        msgInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 180) + 'px';
+        });
+    </script>
+</body>
+</html>
