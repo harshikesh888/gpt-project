@@ -19,31 +19,31 @@ class ChatRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """<html>
-<head><title>Jarvis AI</title>
-<style>body{font-family:Arial;max-width:800px;margin:auto;padding:20px;}textarea{width:100%;height:120px;}button{padding:12px 24px;margin:10px 0;}</style>
-</head>
-<body>
-<h2>🤖 Jarvis AI</h2>
-<textarea id="msg" placeholder="Type your message..."></textarea><br>
-<button onclick="send()">Send</button>
-<div id="resp" style="margin-top:20px;white-space:pre-wrap;"></div>
-<script>
-async function send(){ 
-  let msg = document.getElementById("msg").value;
-  let res = await fetch("/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:msg})});
-  let data = await res.json();
-  document.getElementById("resp").innerText = data.response || data.error;
-}
-</script>
-</body></html>"""
-    
+    with open("index.html", "r", encoding="utf-8") as f:
+        return f.read()
+       
 @app.post("/chat")
 def chat(req: ChatRequest):
-    messages = [{"role": "system", "content": "You are a helpful AI assistant."}]
-    messages.append({"role":"user","content":req.message})
-    
-    payload = {"model": MODEL, "messages": messages, "temperature": 0.7, "max_tokens": 512}
+    messages = [{"role": "system", "content": """You are a helpful AI assistant. Always analyze what the user truly wants to know before responding.
+
+Your responses MUST follow this section-based structure:
+
+1. **Overview** — A brief summary answering the user's core question in 1-2 sentences.
+2. **Key Points** — The main details organized as numbered or bulleted items. Keep each point clear and concise.
+3. **Example** (when applicable) — A practical example or analogy to make the concept easier to understand.
+4. **Summary** — A one-line takeaway to reinforce the answer.
+
+Rules:
+- Start every response by identifying the user's intent (e.g. "You're asking about...", "You want to understand...", "You're looking for...").
+- Use markdown formatting with bold section headers.
+- Keep language simple and direct. Avoid jargon unless the user's message uses it first.
+- If the question is vague, clarify what you think the user means before answering.
+- If the question is opinion-based or has no single answer, present multiple perspectives.
+"""}]
+    messages.extend(req.history)
+    messages.append({"role": "user", "content": req.message})
+
+    payload = {"model": MODEL, "messages": messages, "temperature": 0.7, "max_tokens": 1024}
     headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
     
     r = requests.post(API_URL, headers=headers, json=payload, timeout=120)

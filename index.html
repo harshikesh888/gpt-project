@@ -1,0 +1,18 @@
+<html>
+<head><title>Jarvis AI</title>
+<style>body{font-family:Arial;max-width:800px;margin:auto;padding:20px;}textarea{width:100%;height:120px;}button{padding:12px 24px;margin:10px 0;}</style>
+</head>
+<body>
+<h2>🤖 Jarvis AI</h2>
+<textarea id="msg" placeholder="Type your message..."></textarea><br>
+<button onclick="send()">Send</button>
+<div id="resp" style="margin-top:20px;white-space:pre-wrap;"></div>
+<script>
+async function send(){ 
+  let msg = document.getElementById("msg").value;
+  let res = await fetch("/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:msg})});
+  let data = await res.json();
+  document.getElementById("resp").innerText = data.response || data.error;
+}
+</script>
+</body></html>
