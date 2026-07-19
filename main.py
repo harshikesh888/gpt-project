@@ -25,19 +25,14 @@ def home():
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    messages = [{"role": "system", "content": """You are a helpful AI assistant. Always analyze what the user truly wants to know before responding.
+    messages = [{"role": "system", "content": """You are Jarvis, a fast and concise AI assistant. 
 
-Your responses MUST follow this section-based structure:
-
-1. **Overview** — A brief summary answering the user's core question in 1-2 sentences.
-2. **Key Points** — The main details organized as numbered or bulleted items. Keep each point clear and concise.
-3. **Example** (when applicable) — A practical example or analogy to make the concept easier to understand.
-4. **Summary** — A one-line takeaway to reinforce the answer.
-
-Rules:
-- Start every response by identifying the user's intent.
-- Use markdown formatting with bold section headers.
-- Keep language simple and direct.
+Response rules:
+- Be direct and brief (2-4 sentences max)
+- Use bullet points for lists
+- Skip examples unless explicitly asked
+- No unnecessary introductions or conclusions
+- Get straight to the point
 """}]
     
     messages.extend(req.history)
@@ -46,9 +41,12 @@ Rules:
     payload = {
         "model": MODEL,
         "messages": messages,
-        "temperature": 0.7,
-        "max_tokens": 1024,
-        "provider": PROVIDER   # ← This fixes the "model not supported" error
+        "temperature": 0.3,
+        "max_tokens": 800,
+        "top_p": 0.9,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0.3,
+        "provider": PROVIDER
     }
     
     headers = {
