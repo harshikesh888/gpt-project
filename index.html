@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jarvis AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         body {
             background: #0a0a0a;
@@ -23,7 +26,7 @@
             max-width: 80%;
             padding: 14px 20px;
             border-radius: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .user {
             background: #1f2937;
@@ -35,6 +38,89 @@
             align-self: flex-start;
             border-bottom-left-radius: 4px;
         }
+        .assistant-content {
+            white-space: normal;
+        }
+        .assistant-content p {
+            margin: 0.5em 0;
+        }
+        .assistant-content p:first-child {
+            margin-top: 0;
+        }
+        .assistant-content p:last-child {
+            margin-bottom: 0;
+        }
+        .assistant-content strong {
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+        .assistant-content em {
+            color: #d1d5db;
+            font-style: italic;
+        }
+        .assistant-content code {
+            background: #1f2937;
+            color: #fbbf24;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.875em;
+            font-family: 'Fira Code', 'Consolas', monospace;
+        }
+        .assistant-content pre {
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            padding: 14px 18px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .assistant-content pre code {
+            background: none;
+            color: #e5e7eb;
+            padding: 0;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+        .assistant-content ul,
+        .assistant-content ol {
+            padding-left: 1.5em;
+            margin: 6px 0;
+        }
+        .assistant-content ul {
+            list-style-type: disc;
+        }
+        .assistant-content ol {
+            list-style-type: decimal;
+        }
+        .assistant-content li {
+            margin: 4px 0;
+            line-height: 1.5;
+        }
+        .assistant-content h1,
+        .assistant-content h2,
+        .assistant-content h3 {
+            font-weight: 600;
+            margin: 12px 0 6px 0;
+            color: #f9fafb;
+        }
+        .assistant-content h1 { font-size: 1.25em; }
+        .assistant-content h2 { font-size: 1.125em; }
+        .assistant-content h3 { font-size: 1.05em; }
+        .assistant-content blockquote {
+            border-left: 3px solid #6366f1;
+            padding-left: 12px;
+            margin: 8px 0;
+            color: #9ca3af;
+        }
+        .assistant-content a {
+            color: #22d3ee;
+            text-decoration: underline;
+        }
+        .assistant-content hr {
+            border: none;
+            border-top: 1px solid #4b5563;
+            margin: 10px 0;
+        }
         .input-area {
             background: #111827;
             border-top: 1px solid #374151;
@@ -43,6 +129,19 @@
             background: linear-gradient(90deg, #00f5ff, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .cursor-blink {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #22d3ee;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 0.7s infinite;
         }
     </style>
 </head>
@@ -61,7 +160,6 @@
 
         <!-- Chat Messages -->
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0a0a0a]">
-            <!-- Messages will be added here by JS -->
             <div class="text-center text-gray-500 text-sm py-8">
                 Hello! I'm Jarvis.<br>Ask me anything.
             </div>
@@ -78,6 +176,7 @@
                         placeholder="Message Jarvis..."></textarea>
                     
                     <button 
+                        id="sendBtn"
                         onclick="sendMessage()"
                         class="absolute right-3 bottom-3 bg-cyan-500 hover:bg-cyan-600 text-black font-medium px-6 py-2 rounded-2xl flex items-center gap-2 transition-all active:scale-95">
                         <i class="fas fa-paper-plane"></i>
@@ -92,78 +191,147 @@
     <script>
         const chatDiv = document.getElementById('chat');
         const msgInput = document.getElementById('msg');
+        const sendBtn = document.getElementById('sendBtn');
+        let isStreaming = false;
 
-        function addMessage(content, isUser) {
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+
+        function renderMarkdown(text) {
+            return marked.parse(text);
+        }
+
+        function addUserMessage(content) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
-            
+            msgDiv.className = 'flex justify-end';
             msgDiv.innerHTML = `
-                <div class="message ${isUser ? 'user' : 'assistant'}">
-                    ${content}
+                <div class="message user">
+                    ${escapeHtml(content)}
                 </div>
             `;
             chatDiv.appendChild(msgDiv);
             chatDiv.scrollTop = chatDiv.scrollHeight;
         }
 
-        async function sendMessage() {
-            const message = msgInput.value.trim();
-            if (!message) return;
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-            // Add user message
-            addMessage(message, true);
-            msgInput.value = '';
+        function createAssistantMessage() {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex justify-start';
 
-            // Show thinking indicator
-            const thinkingId = 'thinking-' + Date.now();
-            const thinkingDiv = document.createElement('div');
-            thinkingDiv.id = thinkingId;
-            thinkingDiv.className = "flex justify-start";
-            thinkingDiv.innerHTML = `
-                <div class="message assistant flex items-center gap-2">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Thinking...</span>
-                </div>
-            `;
-            chatDiv.appendChild(thinkingDiv);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
+            const msgContent = document.createElement('div');
+            msgContent.className = 'message assistant';
 
-            try {
-                const res = await fetch("/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        message: message,
-                        history: []   // You can extend this later for conversation history
-                    })
-                });
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'assistant-content';
 
-                const data = await res.json();
+            msgContent.appendChild(contentDiv);
+            msgDiv.appendChild(msgContent);
+            chatDiv.appendChild(msgDiv);
 
-                // Remove thinking indicator
-                document.getElementById(thinkingId).remove();
+            return contentDiv;
+        }
 
-                if (data.response) {
-                    addMessage(data.response, false);
-                } else if (data.error) {
-                    addMessage(`<span class="text-red-400">Error: ${data.error}</span>`, false);
-                }
-            } catch (err) {
-                document.getElementById(thinkingId).remove();
-                addMessage(`<span class="text-red-400">Connection error. Please try again.</span>`, false);
+        function setStreamingCursor(element, show) {
+            const existing = element.querySelector('.cursor-blink');
+            if (show && !existing) {
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor-blink';
+                element.appendChild(cursor);
+            } else if (!show && existing) {
+                existing.remove();
             }
         }
 
-        // Send on Enter (Shift+Enter for new line)
-        msgInput.addEventListener("keydown", function(e) {
-            if (e.key === "Enter" && !e.shiftKey) {
+        async function sendMessage() {
+            const message = msgInput.value.trim();
+            if (!message || isStreaming) return;
+
+            isStreaming = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>...</span>';
+            addUserMessage(message);
+            msgInput.value = '';
+            msgInput.style.height = 'auto';
+
+            const contentDiv = createAssistantMessage();
+            let fullText = '';
+
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, history: [] })
+                });
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            if (data.error) {
+                                contentDiv.innerHTML = `<span class="text-red-400">Error: ${escapeHtml(data.error)}</span>`;
+                                break;
+                            }
+                            if (data.token) {
+                                fullText += data.token;
+                                contentDiv.innerHTML = renderMarkdown(fullText);
+                                setStreamingCursor(contentDiv, true);
+                                chatDiv.scrollTop = chatDiv.scrollHeight;
+                            }
+                            if (data.done) {
+                                setStreamingCursor(contentDiv, false);
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+
+                if (fullText) {
+                    contentDiv.innerHTML = renderMarkdown(fullText);
+                }
+
+            } catch (err) {
+                setStreamingCursor(contentDiv, false);
+                contentDiv.innerHTML = `<span class="text-red-400">Connection error. Please try again.</span>`;
+            }
+
+            isStreaming = false;
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Send</span>';
+        }
+
+        msgInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
 
-        // Auto-resize textarea
-        msgInput.addEventListener('input', function () {
+        msgInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 180) + 'px';
         });
