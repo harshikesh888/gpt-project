@@ -17,12 +17,11 @@ app = FastAPI(title="Jarvis AI")
 
 
 def fix_spacing(text):
-    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
     text = text.replace("(space)", " ")
-    text = re.sub(r'\(space\)', ' ', text)
     text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', text)
-    text = re.sub(r' +', ' ', text)
-    return text.strip()
+    text = re.sub(r' {2,}', ' ', text)
+    return text
 
 
 SYSTEM_PROMPT = """You are Jarvis, a fast and concise AI assistant.
