@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>__APP_NAME__</title>
+    <meta name="description" content="__APP_NAME__ is a fast, private AI assistant for everyday questions, code, and writing.">
+    <meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f7f8fb" media="(prefers-color-scheme: light)">
+    <meta name="color-scheme" content="light dark">
+    <meta name="generator" content="FastAPI">
+    <meta property="og:title" content="__APP_NAME__">
+    <meta property="og:description" content="Fast, focused answers with streaming responses.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="/static/favicon.svg?v=__ASSET_VERSION__" type="image/svg+xml">
+    <link rel="manifest" href="/static/manifest.webmanifest?v=__ASSET_VERSION__">
+    <link rel="stylesheet" href="/static/styles.css?v=__ASSET_VERSION__">
+    <script src="/static/vendor/marked.min.js?v=__ASSET_VERSION__" defer></script>
+    <script src="/static/vendor/purify.min.js?v=__ASSET_VERSION__" defer></script>
+    <script src="/static/app.js?v=__ASSET_VERSION__" defer></script>
+</head>
+<body data-asset-version="__ASSET_VERSION__">
+    <a class="skip-link" href="#prompt">Skip to message input</a>
+
+    <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"/></symbol>
+        <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+        <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+        <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/></symbol>
+        <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3ZM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15ZM5 14l.8 1.7L7.5 16l-1.7.8L5 18.5l-.8-1.7L2.5 16l1.7-.3L5 14Z"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 5.5v16M8 7h8"/></symbol>
+        <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+        <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+        <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></symbol>
+        <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></symbol>
+        <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5M12 17.5v.1"/></symbol>
+        <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5Z"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2C6.5 2 2 6.6 2 12.2c0 4.5 2.9 8.3 6.8 9.7.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5.1 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 4-2.4 4.8-4.6 5.1.4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5a10.1 10.1 0 0 0 6.8-9.7C22 6.6 17.5 2 12 2Z"/></symbol>
+    </svg>
+
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar" aria-label="Chat history">
+            <div class="sidebar-head">
+                <a class="brand" href="/" aria-label="__APP_NAME__ home">
+                    <span class="brand-mark" aria-hidden="true">__APP_INITIAL__</span>
+                    <span class="brand-name">__APP_NAME__</span>
+                </a>
+                <button class="icon-btn sidebar-close" id="closeSidebar" type="button" aria-label="Close sidebar">
+                    <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+                </button>
+            </div>
+
+            <button class="new-chat-btn" id="newChat" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                <span>New chat</span>
+                <kbd class="shortcut">Ctrl K</kbd>
+            </button>
+
+            <div class="sidebar-search" id="searchWrap" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                <input id="searchChats" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off">
+            </div>
+
+            <nav class="conversation-list" id="conversationList" aria-label="Saved conversations"></nav>
+
+            <div class="sidebar-foot">
+                <p class="privacy-note">
+                    <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
+                    Chats stay in your browser
+                </p>
+                <div class="sidebar-actions">
+                    <button class="text-btn" id="themeToggle" type="button" aria-label="Switch to light theme">
+                        <svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg>
+                        <span id="themeLabel">Dark</span>
+                    </button>
+                    <a class="text-btn" id="apiLink" href="/docs" target="_blank" rel="noopener">
+                        <svg class="icon" aria-hidden="true"><use href="#i-code"></use></svg>
+                        <span>API</span>
+                    </a>
+                    <a class="text-btn" href="https://github.com/harshikesh888/gpt-project" target="_blank" rel="noopener noreferrer">
+                        <svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+                <p class="version">v__APP_VERSION__</p>
+            </div>
+        </aside>
+
+        <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+        <main class="main">
+            <header class="topbar">
+                <button class="icon-btn menu-btn" id="openSidebar" type="button" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false">
+                    <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+                </button>
+
+                <div class="topbar-title">
+                    <h1 id="chatTitle">New chat</h1>
+                    <p id="chatSubtitle">Private by design</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="mode-control" role="group" aria-label="Response mode">
+                        <button class="mode-btn is-active" type="button" data-mode="fast" aria-pressed="true" title="Faster answers for everyday questions">
+                            <svg class="icon" aria-hidden="true"><use href="#i-bolt"></use></svg>
+                            <span>Fast</span>
+                        </button>
+                        <button class="mode-btn" type="button" data-mode="smart" aria-pressed="false" title="Deeper reasoning for complex questions">
+                            <svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>
+                            <span>Deep</span>
+                        </button>
+                    </div>
+                    <button class="icon-btn new-chat-icon" id="newChatTop" type="button" aria-label="New chat">
+                        <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="notice" id="notice" role="status" hidden></div>
+
+            <section class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversation">
+            </section>
+
+            <button class="scroll-bottom" id="scrollBottom" type="button" aria-label="Scroll to latest message" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+            </button>
+
+            <div class="composer-shell">
+                <form class="composer" id="composer" autocomplete="off">
+                    <label class="sr-only" for="prompt">Message __APP_NAME__</label>
+                    <textarea id="prompt" name="prompt" rows="1" maxlength="4000" enterkeyhint="send" placeholder="Message __APP_NAME__…" aria-describedby="composerHint"></textarea>
+                    <div class="composer-bar">
+                        <span class="composer-hint" id="composerHint">
+                            <span id="modeHint">Fast answers</span>
+                            <span class="hint-divider" aria-hidden="true">·</span>
+                            <span class="hint-enter">Enter to send, Shift+Enter for a new line</span>
+                        </span>
+                        <div class="composer-actions">
+                            <span class="char-count" id="charCount" hidden aria-live="off"></span>
+                            <button class="send-btn stop-btn" id="stopBtn" type="button" aria-label="Stop generating" hidden>
+                                <svg class="icon" aria-hidden="true"><use href="#i-stop"></use></svg>
+                            </button>
+                            <button class="send-btn" id="sendBtn" type="submit" aria-label="Send message" disabled>
+                                <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <p class="disclaimer">AI can make mistakes. Check important information. <span class="disclaimer-sep">·</span> No server-side chat storage.</p>
+            </div>
+        </main>
+    </div>
+
+    <div class="toasts" id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+    <template id="welcomeTemplate">
+        <div class="welcome">
+            <div class="welcome-mark" aria-hidden="true">__APP_INITIAL__</div>
+            <h2>How can I help today?</h2>
+            <p class="welcome-sub">Ask anything, paste some code, or start with an idea below.</p>
+            <div class="suggestions">
+                <button class="suggestion" type="button" data-prompt="Explain quantum computing in plain language, with one analogy.">
+                    <span class="suggestion-icon"><svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg></span>
+                    <span><strong>Explain a concept</strong><small>Quantum computing, simply</small></span>
+                </button>
+                <button class="suggestion" type="button" data-prompt="Review this Python function for readability and performance. Suggest a cleaner version with tests:\n\n```python\ndef process(items):\n    out = []\n    for i in items:\n        if i not in out:\n            out.append(i)\n    return out\n```">
+                    <span class="suggestion-icon"><svg class="icon" aria-hidden="true"><use href="#i-code"></use></svg></span>
+                    <span><strong>Improve code</strong><small>Review and refactor</small></span>
+                </button>
+                <button class="suggestion" type="button" data-prompt="Draft a concise project update email to my team. We shipped the new dashboard, fixed two critical bugs, and slipped the reporting feature by one week.">
+                    <span class="suggestion-icon"><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg></span>
+                    <span><strong>Write an update</strong><small>Clear, professional email</small></span>
+                </button>
+                <button class="suggestion" type="button" data-prompt="Plan a relaxed 3-day trip to Kyoto in spring, with a daily itinerary, food suggestions, and travel times. Keep it practical.">
+                    <span class="suggestion-icon"><svg class="icon" aria-hidden="true"><use href="#i-map"></use></svg></span>
+                    <span><strong>Plan something</strong><small>A 3-day Kyoto itinerary</small></span>
+                </button>
+            </div>
+            <p class="welcome-note">Tip: press <kbd>Ctrl</kbd> <kbd>K</kbd> for a new chat.</p>
+        </div>
+    </template>
+</body>
+</html>

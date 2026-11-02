@@ -1,0 +1,20 @@
+{
+  "name": "Jarvis AI",
+  "short_name": "Jarvis",
+  "description": "A fast, private AI assistant for questions, code, and writing.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
